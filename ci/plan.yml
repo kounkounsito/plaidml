@@ -157,9 +157,9 @@ SUITES:
       keras-plaid-ocl-cpu:
         pipelines: []
       keras-plaid-ocl-gtx1080:
-        pipelines: [ci]
+        pipelines: []
       keras-stripe-ocl-gtx1080:
-        pipelines: [ci]
+        pipelines: []
       keras-plaid-ocl-gtx1080ti:
         pipelines: [ci]
       keras-stripe-ocl-gtx1080ti:
@@ -236,9 +236,9 @@ SUITES:
   infer:
     platforms:
       keras-plaid-ocl-gtx1080:
-        pipelines: [ci]
+        pipelines: []
       keras-stripe-ocl-gtx1080:
-        pipelines: [ci]
+        pipelines: []
       keras-plaid-ocl-gtx1080ti:
         pipelines: [ci]
       keras-stripe-ocl-gtx1080ti:
