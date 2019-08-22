@@ -86,7 +86,6 @@ def _log_call(func):
             arg_str_list = list()
             for i, arg in enumerate(args):
                 arg_str_list.append('{}: {}'.format(list(sig.parameters)[i][0], arg))
-            logger.debug(kwargs)  # TODO
             for k, v in kwargs.items():
                 arg_str_list.append('{}: {}'.format(k, v))
             logger.debug('{}({})'.format(func.__name__, ', '.join(arg_str_list)))
