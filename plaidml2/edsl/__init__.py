@@ -3,6 +3,7 @@
 from collections import namedtuple
 import logging
 
+import numpy as np
 import six
 
 from plaidml2 import DType
@@ -493,8 +494,17 @@ class Value(ForeignObject):
             ffi_obj = ffi_call(lib.plaidml_expr_str, value.encode('utf-8'))
         elif isinstance(value, ffi.CData) and ffi.typeof(value) is ffi.typeof('plaidml_expr*'):
             ffi_obj = value
+        elif isinstance(value, np.ndarray) and value.ndim == 0:
+            scalar_val = value.item()
+            if isinstance(scalar_val, (six.integer_types, bool)):
+                ffi_obj = ffi_call(lib.plaidml_expr_int, scalar_val)
+            elif isinstance(scalar_val, float):
+                ffi_obj = ffi_call(lib.plaidml_expr_float, scalar_val)
+            else:
+                raise TypeError('Unsupport numpy scalar type {} for value={}'.format(
+                    type(scalar_val), value))
         else:
-            raise TypeError('Unsupported type for value={}'.format(value))
+            raise TypeError('Unsupported type {} for value={}'.format(type(value), value))
         super(Value, self).__init__(ffi_obj)
 
     def as_tensor(self):
