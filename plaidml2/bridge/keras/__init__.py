@@ -1147,6 +1147,10 @@ def print_tensor(x, message=''):
 
 @_log_call
 def prod(value, axis=None, keepdims=False):
+    if isinstance(value, (tuple, list)):
+        # In this case, a product of the elements of the tuple/list is being requested,
+        # rather than a within-tensor product
+        return functools.reduce(lambda x, y: x * y, value)
     return _KerasNode('prod', tensor=plaidml_op.prod(value.tensor, axis, keepdims))
 
 
@@ -1587,6 +1591,10 @@ def stop_gradient(variables):
 
 @_log_call
 def sum(x, axis=None, keepdims=False):
+    if isinstance(x, (tuple, list)):
+        # In this case, a sum of the elements of the tuple/list is being requested,
+        # rather than a within-tensor sum
+        return functools.reduce(lambda a, b: a + b, x)
     return _KerasNode('sum', tensor=plaidml_op.sum(x.tensor, axis, keepdims))
 
 

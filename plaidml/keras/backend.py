@@ -1249,6 +1249,7 @@ def print_tensor(x, message=''):
 
 @_log_call
 def prod(value, axis=None, keepdims=False):
+    print("Sanity check on prod: value: {}, axis: {}, keepdims: {}".format(value, axis, keepdims))
     return op.prod(value,
                    axes=axis,
                    keepdims=keepdims,
