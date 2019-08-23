@@ -1506,7 +1506,7 @@ def softmax(x, axis=None, name=None):
         axis = ndims - 1
     axis = _normalize_axis(axis=axis, ndims=ndims, name=name + ' (softmax)')
     if ndims == 2 and axis == 1:
-        return _KerasNode(name, tensor=plaidml_op.softmax(I, axis=1))
+        return _KerasNode('softmax', name=name, tensor=plaidml_op.softmax(I, axis=1))
 
     if axis == 0:
         group = 1
@@ -1514,7 +1514,7 @@ def softmax(x, axis=None, name=None):
         group = functools.reduce(lambda x, y: x * y, I_dims[:axis])
     values = functools.reduce(lambda x, y: x * y, I_dims[axis:])
     flat_x = reshape(x, (group, values))
-    result = _KerasNode(name, tensor=plaidml_op.softmax(flat_x.tensor, axis=1))
+    result = _KerasNode('softmax', name=name, tensor=plaidml_op.softmax(flat_x.tensor, axis=1))
     return reshape(result, I_dims)
 
 
