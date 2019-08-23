@@ -1092,9 +1092,9 @@ def permute_dimensions(x, pattern=None):
 def placeholder(shape=None, ndim=None, dtype=None, sparse=False, name=None):
     dtype = plaidml.DType.from_numpy(dtype or floatx())
     # TODO: Need to support empty shapes; once supported, convert below to `if _ is not None`
-    if shape:
+    if shape is not None:
         return _KerasNode('placeholder', shape=edsl.LogicalShape(dtype, shape), name=name)
-    if ndim:
+    if ndim is not None:
         return _KerasNode('placeholder', shape=edsl.LogicalShape(dtype, [0] * ndim), name=name)
     raise ValueError()
 
