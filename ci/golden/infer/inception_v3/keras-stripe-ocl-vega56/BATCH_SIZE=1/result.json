@@ -1,0 +1,1 @@
+{"compile_duration": 16.452354907989502, "duration_per_example": 0.0363570146728307, "tile_duration_per_example": 4.9783671874999995e-06, "examples": 1024, "batch_size": 1, "model": "inception_v3", "backend": "plaid", "correct": false, "max_error": 10.8868408203125, "max_abs_error": 0.1531493365764618, "fail_ratio": 0.99}

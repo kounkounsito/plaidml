@@ -21,6 +21,7 @@ CONST:
     vega:       12697.10
     gfx900:     11300.84
     gfx803:      3573.79
+    vega56:    4342.63
     # mali
     t628:          34.05
     # intel
@@ -88,6 +89,14 @@ PLATFORMS:
      variant: linux_x86_64
   keras-stripe-ocl-gfx803:
      variant: linux_x86_64
+  keras-plaid-ocl-vega56:
+     variant: macos_x86_64
+  keras-stripe-ocl-vega56:
+     variant: macos_x86_64
+  keras-plaid-mtl-vega56:
+     variant: macos_x86_64
+  keras-stripe-mtl-vega56:
+     variant: macos_x86_64 
    
 
 VARIANTS:
@@ -148,36 +157,44 @@ SUITES:
     platforms:
       keras-plaid-ocl-cpu:
         pipelines: []
-
       keras-stripe-ocl-neo:
         pipelines: [plaidml, nightly]
-
       keras-plaid-mtl-uhd630:
         pipelines: [plaidml, nightly]
       keras-stripe-mtl-uhd630:
         pipelines: [plaidml, nightly]
-
       keras-plaid-ocl-gfx900:
         pipelines: [plaidml, nightly]
       keras-stripe-ocl-gfx900:
         pipelines: [plaidml, nightly]
-
       keras-plaid-ocl-gv100gl:
         pipelines: [plaidml, nightly]
       keras-stripe-ocl-gv100gl:
         pipelines: [nightly]
-
       keras-plaid-ocl-gp100gl:
         pipelines: [plaidml, nightly]
       keras-stripe-ocl-gp100gl:
         pipelines: [plaidml, nightly]
-
       keras-plaid-ocl-gfx803:
         pipelines: [plaidml, nightly]
       keras-stripe-ocl-gfx803:
         pipelines: [nightly]
+      keras-plaid-ocl-vega56:
+        pipelines: [plaidml]
+      keras-stripe-ocl-vega56:
+        pipelines: [plaidml]
+      keras-plaid-mtl-vega56:
+        pipelines: [plaidml]
+      keras-stripe-mtl-vega56:
+        pipelines: [plaidml]
+      keras-plaid-ocl-gfx803:
+        pipelines: [ci]
+      keras-stripe-ocl-gfx803:
+        pipelines: [ci]
 
     params:
+      ci:
+        batch_sizes: [0]
       plaidml:
         batch_sizes: [0]
       stripe:
@@ -250,7 +267,17 @@ SUITES:
         pipelines: [plaidml]
       keras-plaid-ocl-gfx803:
         pipelines: [plaidml]
+      keras-plaid-ocl-vega56:
+        pipelines: [plaidml]
+      keras-stripe-ocl-vega56:
+        pipelines: [plaidml]
+      keras-plaid-mtl-vega56:
+        pipelines: [plaidml]
+      keras-stripe-mtl-vega56:
+        pipelines: [plaidml]
     params:
+      ci:
+        batch_sizes: [1]
       plaidml:
         batch_sizes: [1]
       stripe:
