@@ -556,6 +556,8 @@ def call(fn, *args):
     def wrap(x):
         if isinstance(x, six.integer_types):
             return Tensor(expr=ffi_call(lib.plaidml_expr_int, x))
+        if np.issubdtype(type(x), np.integer):
+            return Tensor(expr=ffi_call(lib.plaidml_expr_int, x.item()))
         if isinstance(x, float):
             return Tensor(expr=ffi_call(lib.plaidml_expr_float, x))
         if isinstance(x, TensorDim):
