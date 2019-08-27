@@ -7,6 +7,7 @@ import numpy as np
 import six
 
 from plaidml2 import DType
+from plaidml2.core import TensorShape
 from plaidml2.ffi import ForeignObject, ffi, ffi_call, lib
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,10 @@ class LogicalShape(ForeignObject):
             TensorDim(expr=ffi_call(lib.plaidml_logical_shape_get_dim_expr, self.as_ptr(), i))
             for i in range(self.ndims)
         ]
+
+    def into_TensorShape(self):
+        return TensorShape(
+            ptr=ffi_call(lib.plaidml_logical_shape_into_tensor_shape, self.as_ptr()))
 
 
 class Constraint(object):

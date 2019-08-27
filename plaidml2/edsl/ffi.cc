@@ -167,6 +167,14 @@ void plaidml_logical_shape_free(  //
   });
 }
 
+plaidml_shape* plaidml_logical_shape_into_tensor_shape(  //
+    plaidml_error* err,                                  //
+    plaidml_logical_shape* shape) {
+  return ffi_wrap<plaidml_shape*>(err, 0, [&] {  //
+    return new plaidml_shape{IntoTensorShape(shape->shape)};
+  });
+}
+
 void plaidml_expr_free(  //
     plaidml_error* err,  //
     plaidml_expr* expr) {

@@ -125,7 +125,7 @@ class _Function(object):
 
         def make_buffer(tensor):
             # convert LogicalShape into TensorShape
-            shape = plaidml.TensorShape(tensor.shape.dtype, tensor.shape.int_dims)
+            shape = tensor.shape.into_TensorShape()
             return plaidml.Buffer(_device, shape)
 
         input_bindings = [(x.tensor, make_buffer(x.tensor)) for x in self._inputs]
