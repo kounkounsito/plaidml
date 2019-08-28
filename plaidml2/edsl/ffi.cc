@@ -252,6 +252,20 @@ plaidml_expr* plaidml_expr_param(  //
   });
 }
 
+void plaidml_expr_param_reset(  //
+    plaidml_error* err,         //
+    plaidml_expr* expr,         //
+    plaidml_buffer* buffer) {
+  return ffi_wrap_void(err, [&] {
+    auto param_expr = std::dynamic_pointer_cast<ParamExpr>(expr->expr);
+    if (param_expr) {
+      param_expr->buffer = buffer->buffer;
+    } else {
+      throw std::runtime_error("ParamExpr value reset requested for non-ParamExpr");
+    }
+  });
+}
+
 plaidml_expr* plaidml_expr_clone(  //
     plaidml_error* err,            //
     plaidml_expr* expr) {

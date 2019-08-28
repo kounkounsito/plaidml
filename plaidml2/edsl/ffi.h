@@ -184,6 +184,11 @@ PLAIDML_EDSL_API plaidml_expr* plaidml_expr_param(  //
     plaidml_buffer* buffer,                         //
     const char* name);
 
+PLAIDML_EDSL_API void plaidml_expr_param_reset(  //
+    plaidml_error* err,                          //
+    plaidml_expr* shape,                         //
+    plaidml_buffer* buffer);
+
 PLAIDML_EDSL_API plaidml_expr* plaidml_expr_none(  //
     plaidml_error* err                             //
 );

@@ -306,6 +306,11 @@ class Tensor(ForeignObject):
             raise ValueError('One of dims=, shape=, or expr= must be specified.')
         super(Tensor, self).__init__(expr)
 
+    def set_param_value(self, buffer):
+        # Changes the value of a parameter tensor (i.e. one explicitly set to a buffer value)
+        # Illegal on other tensors
+        ffi_call(lib.plaidml_expr_param_reset, self.__ffi_obj__, buffer.as_ptr())
+
     def __hash__(self):
         return hash((self.as_ptr(), self._dims, self._is_contraction))
 

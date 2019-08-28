@@ -1467,7 +1467,11 @@ def set_learning_phase(value):
 
 @_log_call
 def set_value(x, value):
-    _report_unimplemented('set_value')
+    dtype = plaidml.DType.from_numpy(value.dtype)
+    tensor_shape = plaidml.TensorShape(dtype, value.shape)
+    buffer = plaidml.Buffer(_device, tensor_shape)
+    buffer.copy_from_ndarray(value)
+    x.tensor.set_param_value(buffer)
 
 
 @_log_call
