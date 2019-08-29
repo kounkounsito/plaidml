@@ -106,6 +106,7 @@ class _Function(object):
         self._cache = {}
 
     def __call__(self, inputs):
+        logger.debug('_Function: {}({})'.format(self._name, inputs))
         inputs = [
             np.array(inp) if isinstance(inp, (six.integer_types, float)) else inp for inp in inputs
         ]

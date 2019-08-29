@@ -569,8 +569,9 @@ def call(fn, *args):
             return Tensor(expr=ffi_call(lib.plaidml_expr_dim, x.as_ptr()))
         if isinstance(x, Tensor):
             return x
-        raise TypeError('Unexpected type for call argument: {}. fn: {}, args: {}'.format(
-            type(x), fn, args))
+        raise TypeError(
+            'Unexpected type for call argument: {}. fn: {}, args: {}, bad arg: {}'.format(
+                type(x), fn, args, x))
 
     args = [wrap(x) for x in args]
     raw_args = [x.as_ptr() for x in args]
