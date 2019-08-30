@@ -318,7 +318,7 @@ class Frontend(core.Frontend):
             backend_module = os.getenv('KERAS_BACKEND')
             if backend_module is None or backend_module[:7] != 'plaidml':
                 os.environ['KERAS_BACKEND'] = 'plaidml.keras.backend'
-            importlib.import_module(os.environ['KERAS_BACKEND'])
+                importlib.import_module('plaidml.keras')
         if backend == 'tensorflow':
             os.environ['KERAS_BACKEND'] = 'tensorflow'
         if fp16:
