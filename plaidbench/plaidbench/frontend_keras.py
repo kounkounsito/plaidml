@@ -77,6 +77,7 @@ class Model(core.Model):
         self.params = params
 
     def fold_batch_norm(self, model):
+        return model  # TODO: testing aborting this
         import json
         import plaidml.keras.backend as K
         from keras.models import model_from_json
