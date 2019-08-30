@@ -247,13 +247,9 @@ def _inner_run(reports,
         params.examples, params.network_name, params.batch_size, params.backend_name),
                 fg='magenta')
 
-    if params.backend_name == 'plaid_edsl':
-        # Don't do kernel timing with PlaidML EDSL
+    device = plaidml.devices(plaidml.Context())[0]
+    if 'metal' in str(device):
         kernel_timing = False
-    else:
-        device = plaidml.devices(plaidml.Context())[0]
-        if 'metal' in str(device):
-            kernel_timing = False
 
     benchmark_results = {}
     model_output = None

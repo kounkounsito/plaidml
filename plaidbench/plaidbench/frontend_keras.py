@@ -314,25 +314,11 @@ class Frontend(core.Frontend):
         super(Frontend, self).__init__(Frontend.NETWORK_NAMES)
         self.backend = backend
         if backend == 'plaid':
-            try:
-                self.configuration['plaid'] = importlib.import_module('plaidml').__version__
-                importlib.import_module('plaidml.keras').install_backend()
-            except ImportError:
-                raise core.ExtrasNeeded(['plaidml-keras'])
-        if backend == 'plaid_edsl':
-            try:
-                self.configuration['plaid'] = importlib.import_module('plaidml').__version__
-            except ImportError:
-                raise RuntimeError("Failed to import plaidml module")
-            try:
-                importlib.import_module('plaidml2.bridge.keras')
-            except ImportError:
-                raise RuntimeError("The PlaidML2 EDSL Keras bridge was requested but not found.")
-        elif backend == 'tensorflow':
-            try:
-                importlib.import_module('keras.backend')
-            except ImportError:
-                raise core.ExtrasNeeded(['keras', 'tensorflow'])
+            backend_module = os.getenv('KERAS_BACKEND')
+            if backend_module is None or backend_module[:7] != 'plaidml':
+                os.environ['KERAS_BACKEND'] = 'plaidml.keras.backend'
+        if backend == 'tensorflow':
+            os.environ['KERAS_BACKEND'] = 'tensorflow'
         if fp16:
             importlib.import_module('keras.backend').set_floatx('float16')
         if train:
@@ -364,10 +350,6 @@ class Frontend(core.Frontend):
               flag_value='plaid',
               default=True,
               help='Use PlaidML as the backend')
-@click.option('--plaid-edsl',
-              'backend',
-              flag_value='plaid_edsl',
-              help='Use the PlaidML2 (EDSL) backend')
 @click.option('--tensorflow',
               'backend',
               flag_value='tensorflow',

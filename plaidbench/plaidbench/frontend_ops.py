@@ -129,11 +129,9 @@ class Frontend(core.Frontend):
         self.backend_opts = backend_opts
         self.backend = backend
         if backend == 'plaid':
-            try:
-                self.configuration['plaid'] = importlib.import_module('plaidml').__version__
-                importlib.import_module('plaidml.keras').install_backend()
-            except ImportError:
-                raise core.ExtrasNeeded(['plaidml-keras'])
+            backend_module = os.environ['KERAS_BACKEND']
+            if backend_module is None or backend_module[:7] != 'plaidml':
+                os.environ['KERAS_BACKEND'] = 'plaidml.keras.backend'
         elif backend == 'tc':
             try:
                 importlib.import_module('tensor_comprehensions')
