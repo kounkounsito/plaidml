@@ -287,11 +287,19 @@ local PARAMS = {
             {
               name: 'thread_cache',
               pass: {
-                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.ThreadInnerPass',
+                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.AutotilePass',
                 reqs: ['cache'],
                 outer_set: ['cache_outer', 'gpu_thread'],
                 inner_set: ['cache_threads', 'inline'],
-                threads: PARAMS[cfg].NUM_THREADS,
+                clear_outer: true,
+                acc_idxs: false,
+                only_po2: true,
+                odd_size: true,
+                interleave: true,
+                multithread: true,
+                min_count: PARAMS[cfg].NUM_THREADS,
+                max_count: PARAMS[cfg].NUM_THREADS,
+                cache_width: PARAMS[cfg].CACHE_WIDTH,
               }
             },
 
