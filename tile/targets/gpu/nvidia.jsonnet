@@ -332,7 +332,7 @@ local PARAMS = {
                 local_memory_latency: PARAMS[cfg].LOCAL_MEM_LAT,
                 register_latency: PARAMS[cfg].REG_MEM_LAT,
                 comp_parent_tag: 'contract_middle',
-                index_order: 'cache',
+                index_order: 'comp',
                 align_size: PARAMS[cfg].ALIGN_SIZE_B,
               }
             },
