@@ -132,6 +132,35 @@ TensorShape MakeOddTile(const TensorShape& tile) {
   return odd_tile;
 }
 
+size_t Stride1DimCount(const Block& block,
+                       const Refinement& ref,
+                       const std::map<std::string, size_t>& tile_by_name) {
+  size_t count = 1;
+  // Note that the dims with stride 1 may not consecutive due to fix_stride pass
+  for (size_t dim_idx = 0; dim_idx < ref.access.size(); ++dim_idx) {
+    if (ref.interior_shape.dims[dim_idx].stride == 1) {
+      const auto& aff = ref.access[dim_idx];
+      int64_t dim_neg = 0;
+      int64_t dim_pos = 0;
+      for (const auto& kvp : aff.getMap()) {
+        if (kvp.first.empty()) {
+          continue;
+        }
+        size_t idx_outer_size = block.idx_by_name(kvp.first)->range;
+        size_t idx_tile_size = tile_by_name.at(kvp.first);
+        size_t idx_count = math::RoundUp(idx_outer_size, idx_tile_size);
+        if (kvp.second > 0) {
+          dim_pos += kvp.second * (idx_count - 1);
+        } else {
+          dim_neg += kvp.second * (idx_count - 1);
+        }
+      }
+      count *= (dim_pos - dim_neg + 1);
+    }
+  }
+  return count;
+}
+
 TileMetrics ComputeSizes(const std::map<std::string, size_t>& tile_by_name,  //
                          const Block& block,                                 //
                          const proto::AutotilePass& options) {
@@ -150,6 +179,14 @@ TileMetrics ComputeSizes(const std::map<std::string, size_t>& tile_by_name,  //
     int64_t bytes = options.odd_size() ?
       Codec::Resolve(MakeOddTile(tiled))->byte_size() : Codec::Resolve(tiled)->byte_size();
     double bandwidth = tiled.memory_io(options.cache_width());
+    if (options.max_threads() > 0) {
+      // Consider that threads share the cache
+      // Note that there may be multiple dims with stride 1
+      // dim_count is the product of their counts at outer level
+      size_t dim_count = Stride1DimCount(block, ref, tile_by_name);
+      bandwidth /= std::min(dim_count, static_cast<size_t>(options.max_threads()));
+    }
+
     ret.total_bytes += bytes;
     ret.total_bandwidth += bandwidth;
     if (ref.dir == RefDir::In) {

@@ -472,7 +472,8 @@ message AutotilePass {
   // If the tiling is interleaved
   optional bool interleave = 37;
   // If considering the vectorization and memory coalescing for multi-threaded execution
-  optional bool multithread = 38 [default = false];
+  // 0 for not considering multithreaded scenario
+  optional uint32 max_threads = 38 [default = 0];
 }
 
 // A pass that attempts to transpose intermediate buffers such that any

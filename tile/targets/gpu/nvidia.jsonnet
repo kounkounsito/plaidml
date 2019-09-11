@@ -291,12 +291,11 @@ local PARAMS = {
                 reqs: ['cache'],
                 outer_set: ['cache_outer', 'gpu_thread'],
                 inner_set: ['cache_threads', 'inline'],
-                clear_outer: true,
                 acc_idxs: false,
                 only_po2: true,
                 odd_size: true,
                 interleave: true,
-                multithread: true,
+                max_threads: PARAMS[cfg].NUM_THREADS,
                 min_count: PARAMS[cfg].NUM_THREADS,
                 max_count: PARAMS[cfg].NUM_THREADS,
                 cache_width: PARAMS[cfg].CACHE_WIDTH,
@@ -305,12 +304,19 @@ local PARAMS = {
 
             {
               name: 'thread_contract',
-              pass : {
-                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.ThreadInnerPass',
+              pass: {
+                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.AutotilePass',
                 reqs: ['contract_inner'],
                 outer_set: ['contract_inner', 'gpu_thread'],
                 inner_set: ['contract_inner_threads', 'inline'],
-                threads: PARAMS[cfg].NUM_THREADS,
+                acc_idxs: false,
+                only_po2: true,
+                odd_size: true,
+                interleave: true,
+                max_threads: PARAMS[cfg].NUM_THREADS,
+                min_count: PARAMS[cfg].NUM_THREADS,
+                max_count: PARAMS[cfg].NUM_THREADS,
+                cache_width: PARAMS[cfg].CACHE_WIDTH,
               }
             },
 
