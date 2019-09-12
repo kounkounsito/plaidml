@@ -1,6 +1,7 @@
 load("//bzl:conda_repo.bzl", "conda_repo")
 load("//bzl:xsmm_repo.bzl", "xsmm_repo")
 load("//vendor/cuda:configure.bzl", "configure_cuda")
+load("//vendor/cm:configure.bzl", "configure_cm")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("//bzl:dev_repo.bzl", "dev_http_archive")
 
@@ -9,7 +10,7 @@ def plaidml_workspace():
 
     http_archive(
         name = "boost",
-        url = "https://storage.googleapis.com/vertexai-depot/boost_1_66_0.tar.gz",
+        url = "https://github.com/plaidml/depot/raw/master/boost_1_66_0.tar.gz",
         sha256 = "bd0df411efd9a585e5a2212275f8762079fed8842264954675a4fddc46cfcf60",
         strip_prefix = "boost_1_66_0",
         build_file = Label("//bzl:boost.BUILD"),
@@ -39,7 +40,7 @@ def plaidml_workspace():
 
     http_archive(
         name = "half",
-        url = "https://storage.googleapis.com/external_build_repo/half-1.11.0.zip",
+        url = "https://github.com/plaidml/depot/raw/master/half-1.11.0.zip",
         sha256 = "9e5ddb4b43abeafe190e780b5b606b081acb511e6edd4ef6fbe5de863a4affaf",
         strip_prefix = "half-1.11.0",
         build_file = Label("//bzl:half.BUILD"),
@@ -85,8 +86,24 @@ def plaidml_workspace():
 
     http_file(
         name = "plantuml_jar",
-        urls = ["https://storage.googleapis.com/vertexai-depot/plantuml.jar"],
+        urls = ["https://github.com/plaidml/depot/raw/master/plantuml.jar"],
         sha256 = "26d60e43c14106a3d220e33c2b2e073b2bce40b433ad3e5fa13c747f58e67ab6",
+    )
+
+    http_archive(
+        name = "cm_headers",
+        url = "https://github.com/intel/cm-compiler/releases/download/Release_20190717/Linux_C_for_Metal_Development_Package_20190717.zip",
+        sha256 = "4549496e3742ade2ff13e804654cb4ee7ddabb3b95dbc1fdeb9ca22141f317d5",
+        strip_prefix = "Linux_C_for_Metal_Development_Package_20190717",
+        build_file = Label("//bzl:cm_headers.BUILD"),
+    )
+
+    http_archive(
+        name = "libva",
+        url = "https://github.com/intel/libva/releases/download/2.5.0/libva-2.5.0.tar.bz2",
+        sha256 = "3aa89cd369a506ac4dbe5de7c0ef5da4f3d220bf986403f02fa1f6f702af6878",
+        strip_prefix = "libva-2.5.0",
+        build_file = Label("//bzl:libva.BUILD"),
     )
 
     http_archive(
@@ -113,13 +130,14 @@ def plaidml_workspace():
 
     http_archive(
         name = "zlib",
-        url = "https://storage.googleapis.com/external_build_repo/zlib-1.2.8.tar.gz",
+        url = "https://github.com/plaidml/depot/raw/master/zlib-1.2.8.tar.gz",
         sha256 = "36658cb768a54c1d4dec43c3116c27ed893e88b02ecfcb44f2166f9c0b7f2a0d",
         build_file = Label("//bzl:zlib.BUILD"),
     )
 
     configure_protobuf()
     configure_cuda(name = "cuda")
+    configure_cm(name = "cm")
 
     conda_repo(
         name = "com_intel_plaidml_conda_unix",
@@ -202,11 +220,19 @@ def configure_protobuf():
 
 def configure_toolchain():
     http_archive(
+        name = "crosstool_ng_linux_x86_64_gcc_8.3",
+        build_file = Label("//toolchain:crosstool_ng/linux_x86_64.BUILD"),
+        sha256 = "9d69a302cab7e6b0a7c0e4cf98c24bc24dccb75baabd0bac5c58982606e1165f",
+        strip_prefix = "x86_64-unknown-linux-gnu",
+        url = "https://github.com/plaidml/depot/raw/master/toolchain/gcc-8.3/x86_64-unknown-linux-gnu-20190910.tgz",
+    )
+
+    http_archive(
         name = "crosstool_ng_linux_x86_64_gcc_5.4.0",
         build_file = Label("//toolchain:crosstool_ng/linux_x86_64.BUILD"),
         sha256 = "dfbf72d78bfe876b2864f51ac740a54e5fd12e2b4a86c10514fb7accaa9640e6",
         strip_prefix = "x86_64-unknown-linux-gnu",
-        url = "https://storage.googleapis.com/vertexai-depot/toolchain/gcc-5.4.0/x86_64-unknown-linux-gnu-20190419.tgz",
+        url = "https://github.com/plaidml/depot/raw/master/toolchain/gcc-5.4.0/x86_64-unknown-linux-gnu-20190419.tgz",
     )
 
     http_archive(
@@ -214,5 +240,5 @@ def configure_toolchain():
         build_file = Label("//toolchain:crosstool_ng/linux_x86_64.BUILD"),
         sha256 = "28fc19c39683c3c1065058ea525eb9fbb20095249e69971215d9451184ab006f",
         strip_prefix = "x86_64-unknown-linux-gnu",
-        url = "https://storage.googleapis.com/vertexai-depot/toolchain/gcc-4.9.4/x86_64-unknown-linux-gnu-20190617.tgz",
+        url = "https://github.com/plaidml/depot/raw/master/toolchain/gcc-4.9.4/x86_64-unknown-linux-gnu-20190617.tgz",
     )
