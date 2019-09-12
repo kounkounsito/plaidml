@@ -67,7 +67,7 @@ PLATFORMS:
     variant: linux_x86_64
   keras-plaid-ogl-gk20a:
     variant: linux_arm_32v7
-  keras-stripe-ocl-cpu:
+  keras-stripe-llvm-cpu:
     variant: linux_x86_64
   keras-plaid-ocl-gv100gl:
     variant: linux_x86_64
@@ -115,7 +115,7 @@ VARIANTS:
     arch: win_amd64
     system: Windows
     env:
-      PLAIDML_DEVICE_IDS: llvm_cpu.0
+      PLAIDML_DEVICE_IDS: opencl_cpu.0
       PLAIDML_EXPERIMENTAL: 1
       PLAIDML_DEVICE: opencl_cpu.0
       PLAIDML_TARGET: opencl_cpu
@@ -123,7 +123,7 @@ VARIANTS:
 SUITES:
   smoke:
     platforms:
-      keras-stripe-ocl-cpu:
+      keras-stripe-llvm-cpu:
         pipelines: [plaidml]
       keras-plaid-mtl-uhd630:
         pipelines: []
@@ -162,7 +162,7 @@ SUITES:
 
   base:
     platforms:
-      keras-stripe-ocl-cpu:
+      keras-stripe-llvm-cpu:
         pipelines: [plaidml, nightly, ci]
       keras-stripe-ocl-neo:
         pipelines: [plaidml, nightly]
@@ -239,7 +239,7 @@ SUITES:
 
   infer:
     platforms:
-      keras-stripe-ocl-cpu:
+      keras-stripe-llvm-cpu:
         pipelines: [plaidml, nightly, ci]
       keras-tf-cuda-gp100gl:
         pipelines: [nightly]
@@ -370,7 +370,7 @@ SUITES:
 
   comprehensive:
     platforms:
-      keras-stripe-ocl-cpu:
+      keras-stripe-llvm-cpu:
         pipelines: [nightly]
       keras-tf-cuda-gp100gl:
         pipelines: [nightly]
