@@ -278,6 +278,10 @@ struct Refinement : Taggable {
   // Refinements.
   Refinement& mut() const { return const_cast<Refinement&>(*this); }
 
+  bool is_global() const { return std::all_of(location.devs.begin(), location.devs.end(),
+    [](const Device& dev) { return dev.name == "GLOBAL"; }); 
+  }
+
  private:
   std::string into_;
 };

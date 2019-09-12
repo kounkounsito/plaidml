@@ -133,14 +133,14 @@ TensorShape MakeOddTile(const TensorShape& tile) {
 }
 
 // Recursively find the block with tag "ref_tile"
-Block* GetReferenceBlock(Block *block) {
-  if (block->has_tag("ref_tile")) {
+Block* GetReferenceBlock(Block *block, const std::string& tag) {
+  if (block->has_tag(tag)) {
     return block;
   }
-  for (auto stmt : block->stmts) {
+  for (auto& stmt : block->stmts) {
     auto sub = Block::Downcast(stmt);
     if (sub) {
-      Block* ret = GetReferenceBlock(sub.get());
+      Block* ret = GetReferenceBlock(sub.get(), tag);
       if (ret) {
         return ret;
       }
@@ -150,7 +150,7 @@ Block* GetReferenceBlock(Block *block) {
 }
 
 // Find the index sizes in the reference block
-std::map<std::string, size_t> FixedTileIndex(const AliasMap& map) {
+std::map<std::string, size_t> FixedTileIndex(const AliasMap& map, const std::string& tag) {
   // Find the kernel of block
   const AliasMap* kernel_map = map.parent_alias_map();
   while (!kernel_map->this_block()->has_tag("kernel")) {
@@ -158,7 +158,7 @@ std::map<std::string, size_t> FixedTileIndex(const AliasMap& map) {
   }
   Block* kernel_block = kernel_map->this_block();
   // Find the reference block
-  Block* ref_block = GetReferenceBlock(kernel_block);
+  Block* ref_block = GetReferenceBlock(kernel_block, tag);
   // Return the tile plan of the reference block
   std::map<std::string, size_t> ref_tiles;
   auto inner = ref_block->SubBlock(0);
@@ -475,8 +475,8 @@ void AutotilePass::Apply(CompilerState* state) const {
       }
     }*/
     std::map<std::string, size_t> fixed_tiles;
-    if (options_.reference()) {
-      fixed_tiles = FixedTileIndex(map);
+    if (options_.reference().size() > 0) {
+      fixed_tiles = FixedTileIndex(map, options_.reference());
     }
     ComputeDensityCostModel model(*block, options_);
     auto result = PickBestTile(*block, fixed_tiles, options_.only_po2(),
@@ -524,8 +524,8 @@ void PartitionComputePass::Apply(CompilerState* state) const {
   RunOnBlocks(state->entry(), reqs, [this](const AliasMap& map, Block* block) {
     PartitionComputeCostModel model(*block, options_);
     std::map<std::string, std::size_t> fixed_tiles;
-    if (options_.reference()) {
-      fixed_tiles = FixedTileIndex(map);
+    if (options_.reference().size() > 0) {
+      fixed_tiles = FixedTileIndex(map, options_.reference());
     }
     auto result = PickBestTile(*block, fixed_tiles, false, false, options_.only_multiple_of_32(), false, model);
     if (result) {

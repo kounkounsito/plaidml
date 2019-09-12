@@ -284,17 +284,47 @@ local PARAMS = {
               },
             },
 
+            // Mark the largest cache block in a kernel as "reference_tile"
             {
-              name: 'thread_cache',
+              name: 'reference_cache',
+              pass: {
+                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.CacheReferencePass',
+                reqs: ['kernel'],
+                tags: ['reference_tile'],
+              },
+            },
+
+            {
+              name: 'thread_reference_cache',
               pass: {
                 '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.AutotilePass',
-                reqs: ['cache'],
+                reqs: ['cache', 'reference_tile'],
                 outer_set: ['cache_outer', 'gpu_thread'],
                 inner_set: ['cache_threads', 'inline'],
                 acc_idxs: false,
                 only_po2: true,
                 odd_size: true,
                 interleave: true,
+                max_threads: PARAMS[cfg].NUM_THREADS,
+                min_count: PARAMS[cfg].NUM_THREADS,
+                max_count: PARAMS[cfg].NUM_THREADS,
+                cache_width: PARAMS[cfg].CACHE_WIDTH,
+              }
+            },
+
+            {
+              name: 'thread_cache',
+              pass: {
+                '@type': 'type.vertex.ai/vertexai.tile.codegen.proto.AutotilePass',
+                reqs: ['cache'],
+                exclude: ['reference_tile'],
+                outer_set: ['cache_outer', 'gpu_thread'],
+                inner_set: ['cache_threads', 'inline'],
+                acc_idxs: false,
+                only_po2: true,
+                odd_size: true,
+                interleave: true,
+                reference: 'reference_tile',
                 max_threads: PARAMS[cfg].NUM_THREADS,
                 min_count: PARAMS[cfg].NUM_THREADS,
                 max_count: PARAMS[cfg].NUM_THREADS,
@@ -313,6 +343,7 @@ local PARAMS = {
                 only_po2: true,
                 odd_size: true,
                 interleave: true,
+                reference: 'reference_tile',
                 max_threads: PARAMS[cfg].NUM_THREADS,
                 min_count: PARAMS[cfg].NUM_THREADS,
                 max_count: PARAMS[cfg].NUM_THREADS,

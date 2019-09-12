@@ -475,7 +475,7 @@ message AutotilePass {
   // 0 for not considering multithreaded scenario
   optional uint32 max_threads = 38 [default = 0];
   // If the plan has a reference that fixes some index sizes
-  optional bool reference = 39 [default = false];
+  optional string reference = 39 [default = ""];
 }
 
 // A pass that attempts to transpose intermediate buffers such that any
@@ -507,7 +507,7 @@ message PartitionComputePass {
   // This is primarily required for some arch.
   optional bool only_multiple_of_32 = 5 [default = false];
   // If the plan has a reference that fixes some index sizes
-  optional bool reference = 6 [default = false];
+  optional string reference = 6 [default = ""];
 }
 
 // The partition pass splits a single block into an 'outer' and inner block so
@@ -686,4 +686,10 @@ message FixStridesPass {
 // correspond to the low stride
 message IdxOrderPass {
   repeated string reqs = 1;
+}
+
+// Mark the cache block with the largest refinement
+message CacheReferencePass {
+  repeated string reqs = 1;
+  repeated string tags = 2;
 }
