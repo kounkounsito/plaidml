@@ -132,6 +132,44 @@ TensorShape MakeOddTile(const TensorShape& tile) {
   return odd_tile;
 }
 
+// Recursively find the block with tag "ref_tile"
+Block* GetReferenceBlock(Block *block) {
+  if (block->has_tag("ref_tile")) {
+    return block;
+  }
+  for (auto stmt : block->stmts) {
+    auto sub = Block::Downcast(stmt);
+    if (sub) {
+      Block* ret = GetReferenceBlock(sub.get());
+      if (ret) {
+        return ret;
+      }
+    }
+  }
+  return nullptr;
+}
+
+// Find the index sizes in the reference block
+std::map<std::string, size_t> FixedTileIndex(const AliasMap& map) {
+  // Find the kernel of block
+  const AliasMap* kernel_map = map.parent_alias_map();
+  while (!kernel_map->this_block()->has_tag("kernel")) {
+    kernel_map = kernel_map->parent_alias_map();
+  }
+  Block* kernel_block = kernel_map->this_block();
+  // Find the reference block
+  Block* ref_block = GetReferenceBlock(kernel_block);
+  // Return the tile plan of the reference block
+  std::map<std::string, size_t> ref_tiles;
+  auto inner = ref_block->SubBlock(0);
+  for (const auto& idx : inner->idxs) {
+    if (idx.affine == Affine()) {
+      ref_tiles[idx.name] = idx.range;
+    }
+  }
+  return ref_tiles;
+}
+
 size_t Stride1DimCount(const Block& block,
                        const Refinement& ref,
                        const std::map<std::string, size_t>& tile_by_name) {
@@ -351,16 +389,24 @@ struct TileSearchState {
 };
 
 template <typename CostModel>
-boost::optional<TileResult> PickBestTile(const Block& block, bool only_po2, bool only_even, bool only_multiple_of_32,
+boost::optional<TileResult> PickBestTile(const Block& block,
+                                         const std::map<std::string, size_t> fixed_tiles,
+                                         bool only_po2, bool only_even, bool only_multiple_of_32,
                                          bool is_fast, const CostModel& model) {
   IVLOG(3, "Autotile> PickBestTile> block: " << block.name);
   TileSearchState state;
   Tile tile(block, only_multiple_of_32 ? 32 : 1);
 
   for (size_t i = 0; i < block.idxs.size(); i++) {
-    if (!model.IndexFilter(block, block.idxs[i])) {
-      tile.dims[i].size = block.idxs[i].range;
+    const Index& idx = block.idxs[i];
+    if (!model.IndexFilter(block, idx)) {
+      tile.dims[i].size = idx.range;
       tile.dims[i].count = 1;
+    }
+    else if (fixed_tiles.find(idx.name) != fixed_tiles.end()) {
+      // Set the fixed index, do not change them later
+      tile.dims[i].size = fixed_tiles.at(idx.name);
+      tile.dims[i].count = math::RoundUp(idx.range, tile.dims[i].size);
     }
   }
   Cost cost = model.ComputeCost(block, tile);
@@ -375,27 +421,32 @@ boost::optional<TileResult> PickBestTile(const Block& block, bool only_po2, bool
     tile = it->second;
     state.todo.erase(*it);
     for (size_t i = 0; i < block.idxs.size(); i++) {
-      if (!model.IndexFilter(block, block.idxs[i])) {
+      const Index& idx = block.idxs[i];
+      if (!model.IndexFilter(block, idx)) {
+        continue;
+      }
+      if (fixed_tiles.find(idx.name) != fixed_tiles.end()) {
+        // Do not change the fixed index
         continue;
       }
       auto prev = tile.dims[i];
-      if (prev.size == block.idxs[i].range) {
+      if (prev.size == idx.range) {
         continue;  // Already at max size
       }
       if (only_po2) {
-        tile.set(i, 2 * prev.size, block.idxs[i].range);
+        tile.set(i, 2 * prev.size, idx.range);
       } else if (only_even) {
         // Find the next even divisor of range
-        for (size_t j = prev.size + 1; j <= block.idxs[i].range; j++) {
-          if (block.idxs[i].range % j == 0) {
-            tile.set(i, j, block.idxs[i].range);
+        for (size_t j = prev.size + 1; j <= idx.range; j++) {
+          if (idx.range % j == 0) {
+            tile.set(i, j, idx.range);
             break;
           }
         }
       } else if (only_multiple_of_32) {
-        tile.set(i, 32 + prev.size, block.idxs[i].range);
+        tile.set(i, 32 + prev.size, idx.range);
       } else {
-        tile.set(i, prev.size + 1, block.idxs[i].range);
+        tile.set(i, prev.size + 1, idx.range);
       }
       if (!state.found_tiles.count(tile)) {
         cost = model.ComputeCost(block, tile);
@@ -415,17 +466,21 @@ void AutotilePass::Apply(CompilerState* state) const {
     if (block->has_any_tags(FromProto(options_.exclude()))) {
       return;
     }
-    if (block->has_tag("cache")) {
+/*    if (block->has_tag("cache")) {
       for (const auto& ref : block->refs) {
         if (IsWriteDir(ref.dir) && ref.location.devs[0].name == "REGISTER") {
           // This is cached buffer to register, can't be threaded.
           return;
         }
       }
+    }*/
+    std::map<std::string, size_t> fixed_tiles;
+    if (options_.reference()) {
+      fixed_tiles = FixedTileIndex(map);
     }
     ComputeDensityCostModel model(*block, options_);
-    auto result = PickBestTile(*block, options_.only_po2(), options_.only_even(), options_.only_multiple_of_32(),
-                               options_.fast(), model);
+    auto result = PickBestTile(*block, fixed_tiles, options_.only_po2(),
+        options_.only_even(), options_.only_multiple_of_32(), options_.fast(), model);
     if (result) {
       IVLOG(2, "Autotile> block: " << block->name << ", tile: " << result->tile << ", cost: " << result->cost);
       const TileShape& tiling_shape = options_.flip() ? result->tile.counts() : result->tile.sizes();
@@ -468,7 +523,11 @@ void PartitionComputePass::Apply(CompilerState* state) const {
   auto reqs = FromProto(options_.reqs());
   RunOnBlocks(state->entry(), reqs, [this](const AliasMap& map, Block* block) {
     PartitionComputeCostModel model(*block, options_);
-    auto result = PickBestTile(*block, false, false, options_.only_multiple_of_32(), false, model);
+    std::map<std::string, std::size_t> fixed_tiles;
+    if (options_.reference()) {
+      fixed_tiles = FixedTileIndex(map);
+    }
+    auto result = PickBestTile(*block, fixed_tiles, false, false, options_.only_multiple_of_32(), false, model);
     if (result) {
       IVLOG(2, "PartitionCompute> block: " << block->name                 //
                                            << ", tile: " << result->tile  //

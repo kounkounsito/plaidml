@@ -474,6 +474,8 @@ message AutotilePass {
   // If considering the vectorization and memory coalescing for multi-threaded execution
   // 0 for not considering multithreaded scenario
   optional uint32 max_threads = 38 [default = 0];
+  // If the plan has a reference that fixes some index sizes
+  optional bool reference = 39 [default = false];
 }
 
 // A pass that attempts to transpose intermediate buffers such that any
@@ -504,6 +506,8 @@ message PartitionComputePass {
   // Only consider tilings whose sizes are multiples of 32.
   // This is primarily required for some arch.
   optional bool only_multiple_of_32 = 5 [default = false];
+  // If the plan has a reference that fixes some index sizes
+  optional bool reference = 6 [default = false];
 }
 
 // The partition pass splits a single block into an 'outer' and inner block so
