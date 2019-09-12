@@ -67,7 +67,7 @@ PLATFORMS:
     variant: linux_x86_64
   keras-plaid-ogl-gk20a:
     variant: linux_arm_32v7
-  keras-plaid-ocl-cpu:
+  keras-stripe-ocl-cpu:
     variant: linux_x86_64
   keras-plaid-ocl-gv100gl:
     variant: linux_x86_64
@@ -93,27 +93,38 @@ PLATFORMS:
      variant: windows_x86_64
   keras-stripe-ocl-gfx804:
      variant: windows_x86_64
-   
 
 VARIANTS:
   linux_x86_64:
     arch: manylinux1_x86_64
     system: Linux
-    experimental: yes
+    env:
+      PLAIDML_DEVICE_IDS: opencl_cpu.0
+      PLAIDML_EXPERIMENTAL: 1
+      PLAIDML_DEVICE: opencl_cpu.0
+      PLAIDML_TARGET: opencl_cpu
   macos_x86_64:
     arch: macosx_10_10_x86_64
     system: Darwin
-    experimental: yes
+    env:
+      PLAIDML_DEVICE_IDS: llvm_cpu.0
+      PLAIDML_EXPERIMENTAL: 1
+      PLAIDML_DEVICE: opencl_cpu.0
+      PLAIDML_TARGET: opencl_cpu
   windows_x86_64:
     arch: win_amd64
     system: Windows
-    experimental: yes
+    env:
+      PLAIDML_DEVICE_IDS: opencl_cpu.0
+      PLAIDML_EXPERIMENTAL: 1
+      PLAIDML_DEVICE: opencl_cpu.0
+      PLAIDML_TARGET: opencl_cpu
 
 SUITES:
   smoke:
     platforms:
-      keras-plaid-ocl-cpu:
-        pipelines: []
+      keras-stripe-ocl-cpu:
+        pipelines: [plaidml]
       keras-plaid-mtl-uhd630:
         pipelines: []
       keras-plaid-ocl-gp100gl:
@@ -151,8 +162,8 @@ SUITES:
 
   base:
     platforms:
-      keras-plaid-ocl-cpu:
-        pipelines: []
+      keras-stripe-ocl-cpu:
+        pipelines: [plaidml, nightly, ci]
       keras-stripe-ocl-neo:
         pipelines: [plaidml, nightly]
       keras-plaid-mtl-uhd630:
@@ -176,9 +187,9 @@ SUITES:
       keras-stripe-ocl-gfx803:
         pipelines: [nightly]
       keras-plaid-ocl-gfx804:
-        pipelines: [plaidml, ci]
+        pipelines: [plaidml]
       keras-stripe-ocl-gfx804:
-        pipelines: [plaidml, ci]
+        pipelines: [plaidml]
 
     params:
       ci:
@@ -228,8 +239,8 @@ SUITES:
 
   infer:
     platforms:
-      keras-plaid-ocl-cpu:
-        pipelines: []
+      keras-stripe-ocl-cpu:
+        pipelines: [plaidml, nightly, ci]
       keras-tf-cuda-gp100gl:
         pipelines: [nightly]
         append_args: [--tensorflow]
@@ -256,9 +267,9 @@ SUITES:
       keras-plaid-ocl-gfx803:
         pipelines: [plaidml]
       keras-plaid-ocl-gfx804:
-        pipelines: [plaidml, ci]
+        pipelines: [plaidml]
       keras-stripe-ocl-gfx804:
-        pipelines: [plaidml, ci]
+        pipelines: [plaidml]
 
     params:
       ci:
@@ -359,8 +370,8 @@ SUITES:
 
   comprehensive:
     platforms:
-      keras-plaid-ocl-cpu:
-        pipelines: []
+      keras-stripe-ocl-cpu:
+        pipelines: [nightly]
       keras-tf-cuda-gp100gl:
         pipelines: [nightly]
         append_args: [--tensorflow]
