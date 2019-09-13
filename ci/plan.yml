@@ -93,6 +93,15 @@ PLATFORMS:
      variant: windows_x86_64
   keras-stripe-ocl-gfx804:
      variant: windows_x86_64
+  keras-plaid-ocl-vega56:
+     variant: macos_x86_64  
+  keras-stripe-ocl-vega56:
+     variant: macos_x86_64  
+  keras-plaid-mtl-vega56:
+     variant: macos_x86_64  
+  keras-stripe-mtl-vega56:
+     variant: macos_x86_64  
+
 
 VARIANTS:
   linux_x86_64:
