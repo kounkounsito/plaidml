@@ -222,6 +222,8 @@ SUITES:
             soft_fail: true
           keras-plaid-mtl-uhd630:
             soft_fail: true
+          keras-stripe-llvm-cpu:
+            soft_fail: true
         shards: 3
       regression:
         args: [regression_test.py]
@@ -305,7 +307,11 @@ SUITES:
     workloads:
       imdb_lstm:
         precision: high
-        skip_platforms: [keras-stripe-ocl-neo, keras-stripe-mtl-uhd630, keras-stripe-ocl-gfx804]
+        skip_platforms: 
+           - keras-stripe-ocl-neo
+           - keras-stripe-mtl-uhd630
+           - keras-stripe-ocl-gfx804
+           - keras-stripe-llvm-cpu
         perf_threshold: 0.7
       inception_v3:
         precision: high
