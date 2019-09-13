@@ -21,7 +21,7 @@ CONST:
     vega:       12697.10
     gfx900:     11300.84
     gfx803:      3573.79
-    vega56:    4342.63
+    vega56:      4342.63
     # mali
     t628:          34.05
     # intel
@@ -191,6 +191,15 @@ SUITES:
         pipelines: [plaidml, ci]
       keras-stripe-ocl-gfx804:
         pipelines: [plaidml, ci]
+      keras-plaid-ocl-vega56:
+        pipelines: [plaidml, ci]
+      keras-stripe-ocl-vega56:
+        pipelines: [plaidml, ci]
+      keras-plaid-mtl-vega56:
+        pipelines: [plaidml, ci]
+      keras-stripe-mtl-vega56:
+        pipelines: [plaidml, ci]
+
 
     params:
       ci:
@@ -270,6 +279,14 @@ SUITES:
       keras-plaid-ocl-gfx804:
         pipelines: [plaidml, ci]
       keras-stripe-ocl-gfx804:
+        pipelines: [plaidml, ci]
+      keras-plaid-ocl-vega56:
+        pipelines: [plaidml, ci]
+      keras-stripe-ocl-vega56:
+        pipelines: [plaidml, ci]
+      keras-plaid-mtl-vega56:
+        pipelines: [plaidml, ci]
+      keras-stripe-mtl-vega56:
         pipelines: [plaidml, ci]
 
     params:
