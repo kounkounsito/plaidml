@@ -43,11 +43,11 @@ void LargestRefBlock(Block* block) {
 
 void CacheReferencePass::Apply(CompilerState* state) const {
   auto reqs = stripe::FromProto(options_.reqs());
-  largest_cache_size = 0;
-  largest_cache_block = nullptr;
   RunOnBlocks(state->entry(), reqs,
               [&](const AliasMap& alias_map, stripe::Block* block) {  //
                 // Mark the cache block with the largest refinement as "ref_tile"
+                largest_cache_size = 0;
+                largest_cache_block = nullptr;
                 LargestRefBlock(block);
                 if (largest_cache_block) {
                   largest_cache_block->add_tags(FromProto(options_.tags()));

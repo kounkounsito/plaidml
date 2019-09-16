@@ -161,10 +161,12 @@ std::map<std::string, size_t> FixedTileIndex(const AliasMap& map, const std::str
   Block* ref_block = GetReferenceBlock(kernel_block, tag);
   // Return the tile plan of the reference block
   std::map<std::string, size_t> ref_tiles;
-  auto inner = ref_block->SubBlock(0);
-  for (const auto& idx : inner->idxs) {
-    if (idx.affine == Affine()) {
-      ref_tiles[idx.name] = idx.range;
+  if (ref_block) {
+    auto inner = ref_block->SubBlock(0);
+    for (const auto& idx : inner->idxs) {
+      if (idx.affine == Affine()) {
+        ref_tiles[idx.name] = idx.range;
+      }
     }
   }
   return ref_tiles;
