@@ -28,11 +28,12 @@ std::string ReadFile(const boost::filesystem::path& path, bool binary) {
 
 void WriteFile(const boost::filesystem::path& path,  //
                bool binary,                          //
+               bool append,                          //
                const std::function<void(std::ofstream& fout)>& writer) {
   if (path.has_parent_path()) {
     boost::filesystem::create_directory(path.parent_path());
   }
-  std::ios_base::openmode mode = std::ios_base::out;
+  std::ios_base::openmode mode = append ? std::ios_base::app : std::ios_base::out;
   if (binary) {
     mode |= std::ios::binary;
   }
@@ -42,8 +43,9 @@ void WriteFile(const boost::filesystem::path& path,  //
 
 void WriteFile(const boost::filesystem::path& path,  //
                const std::string& contents,          //
-               bool binary) {
-  WriteFile(path, binary, [contents](std::ofstream& fout) { fout << contents; });
+               bool binary,                          //
+               bool append) {
+  WriteFile(path, binary, append, [contents](std::ofstream& fout) { fout << contents; });
 }
 
 }  // namespace vertexai

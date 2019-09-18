@@ -9,6 +9,7 @@ gencfg(
         "//tile/targets/gpu:amd.json",
         "//tile/targets/gpu:cm.json",
         "//tile/targets/gpu:nvidia.json",
+        "//tile/targets/gpu:nvidia_test.json",
         "//tile/targets/gpu:intel_gen9.json",
         "//tile/targets/cpu:llvm_cpu.json",
         "//tile/targets/cpu:opencl_cpu.json",

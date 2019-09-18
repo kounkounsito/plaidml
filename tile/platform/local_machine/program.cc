@@ -118,6 +118,10 @@ lang::KernelList CompileProgram(           //
         runinfo.const_inputs.emplace(kvp.first);
       }
     }
+    auto test_cfg = env::Get("TEST_CONFIG");
+    if (test_cfg.size() > 0) {
+      stripe_cfg = test_cfg;
+    }
     return codegen::GenerateProgram(runinfo, stripe_cfg, out_path, const_bufs);
   }
 

@@ -2,9 +2,12 @@
 
 #include "tile/platform/local_machine/run_request.h"
 
+#include <chrono>
 #include <unordered_set>
 
+#include "base/util/env.h"
 #include "base/util/error.h"
+#include "base/util/file.h"
 
 namespace vertexai {
 namespace tile {
@@ -17,6 +20,7 @@ boost::future<std::vector<std::shared_ptr<hal::Result>>> RunSchedule(const conte
   std::vector<std::shared_ptr<hal::Event>> deps;
   deps.resize(req->program()->schedule().steps.size());
   std::unordered_set<std::shared_ptr<hal::Event>> dep_set;
+  std::unordered_map<std::size_t, double> kernel_times;
 
   for (const auto& step : req->program()->schedule().steps) {
     IVLOG(2, "Queueing s" << step.idx << ": " << step);
@@ -47,19 +51,25 @@ boost::future<std::vector<std::shared_ptr<hal::Result>>> RunSchedule(const conte
     }
     std::shared_ptr<hal::Event> event;
     switch (step.tag) {
-      case schedule::Step::Tag::kRun:
+      case schedule::Step::Tag::kRun: {
+        auto start = std::chrono::system_clock::now();
         // NOTE: VLOG_IS_ON(1) is needed here because LogResults depends on profiling
         // being enabled in order to print durations.
         event = req->program()->executable()->Run(ctx, step.kidx, current_params, current_deps,
                                                   ctx.is_logging_events() || VLOG_IS_ON(1));
+        auto end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        kernel_times[step.kidx] = elapsed_seconds.count();
         break;
-      case schedule::Step::Tag::kCopy:
+      }
+      case schedule::Step::Tag::kCopy: {
         if (current_params.size() != 2) {
           throw error::Internal{"Invalid parameter count for copy step s" + std::to_string(step.idx)};
         }
         event = req->program()->devinfo()->dev->executor()->Copy(ctx, current_params[1], 0, current_params[0], 0,
                                                                  step.byte_count, current_deps);
         break;
+      }
       default:
         throw error::Internal{"Invalid schedule step s" + std::to_string(step.idx)};
     }
@@ -71,6 +81,19 @@ boost::future<std::vector<std::shared_ptr<hal::Result>>> RunSchedule(const conte
       dep_set.erase(dep);
     }
     deps[step.idx] = std::move(event);
+  }
+
+  auto test_output = env::Get("TEST_OUTPUT");
+  if (test_output.size() > 0) {
+    std::ostringstream test_result;
+    for (auto& it : kernel_times) {
+      const lang::KernelInfo& ki = req->program()->kernel_list().kernels[it.first];  
+      size_t start = ki.comments.rfind("//") + 2;
+      size_t end = ki.comments.rfind("\n");
+      std::string feature = ki.comments.substr(start, end - start);
+      test_result << feature << "\n" << it.second << "\n";
+    }
+    WriteFile(test_output, test_result.str(), false, true);
   }
 
   boost::future<std::vector<std::shared_ptr<hal::Result>>> results;
