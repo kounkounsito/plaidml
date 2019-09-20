@@ -7,6 +7,7 @@ import plaidml
 import functools
 import numpy as np
 import operator
+import os
 import sys
 import time
 
@@ -131,5 +132,9 @@ class TilePlanGenerator(object):
         to_call()
 
 if __name__ == '__main__':
+  if 'TEST_OUTPUT' not in os.environ:
+    print('Need environment variable TEST_OUTPUT for the filename of the test result')
+    exit()
+  os.remove(os.environ['TEST_OUTPUT'])
   ttp = TilePlanGenerator(pkb)
   ttp.runAll()
