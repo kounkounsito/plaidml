@@ -135,6 +135,8 @@ if __name__ == '__main__':
   if 'TEST_OUTPUT' not in os.environ:
     print('Need environment variable TEST_OUTPUT for the filename of the test result')
     exit()
-  os.remove(os.environ['TEST_OUTPUT'])
+  out_fn = os.environ['TEST_OUTPUT']
+  if os.path.exists(out_fn):
+    os.remove(out_fn)
   ttp = TilePlanGenerator(pkb)
   ttp.runAll()

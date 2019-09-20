@@ -30,7 +30,7 @@ public:
   void GeneratePlans(size_t k);
   bool IsValidPlan();
   std::string Features(Block *block);
-  std::string RefFeatures(Block* block, const Refinement& ref);
+  std::string RefFeatures(Block* block, Refinement* ref);
   StatementList& BlockList() { return block_list_; }
 
 private:
@@ -39,7 +39,6 @@ private:
   std::set<const Index*> acc_idxs_;
   std::vector<Index*> index_;
   std::vector<size_t> plan_;
-  std::string target_features_;
   StatementList block_list_;
 };
 
@@ -51,7 +50,6 @@ TilePlanGenerator::TilePlanGenerator(Block* target, const proto::GenerateTilesPa
     }
   }
   plan_.resize(index_.size());
-  target_features_ = Features(target_);
 };
 
 bool TilePlanGenerator::IsValidPlan() {
@@ -70,18 +68,23 @@ bool TilePlanGenerator::IsValidPlan() {
   return tot_bytes <= options_.max_mem_size();
 } 
 
-std::string TilePlanGenerator::RefFeatures(Block* block, const Refinement& ref) {
+std::string TilePlanGenerator::RefFeatures(Block* block, Refinement* ref) {
   std::string features;
-  auto access = ref.FlatAccess();
+  auto access = ref->FlatAccess();
   auto acc_map = access.getMap();
   for (const auto& idx : block->idxs) {
-    const auto& it = acc_map.find(idx.name);
-    if (it == acc_map.end()) {
-      features = features + "0 ";
+    if (idx.affine == Affine()) {
+      const auto& it = acc_map.find(idx.name);
+      if (it == acc_map.end()) {
+        features = features + "0 ";
+      }
+      else {
+        features = features + std::to_string(it->second) + " ";
+      }
     }
-    else {
-      features = features + std::to_string(it->second) + " ";
-    }
+  }
+  while (features.back() == ' ') {
+    features.pop_back();
   }
   return features;
 }
@@ -89,12 +92,20 @@ std::string TilePlanGenerator::RefFeatures(Block* block, const Refinement& ref) 
 // Generate the string of features
 std::string TilePlanGenerator::Features(Block* block) {
   std::string ref_features;
-  for (const auto& ref : block->refs) {
+  for (auto ref : block->ref_ins()) {
+    ref_features = ref_features + ";" + RefFeatures(block, ref);
+  }
+  for (auto ref : block->ref_outs(true)) {
     ref_features = ref_features + ";" + RefFeatures(block, ref);
   }
   std::string idx_features;
   for (const auto& idx : block->idxs) {
-    idx_features = idx_features + std::to_string(idx.range) + " ";
+    if (idx.affine == Affine()) {
+      idx_features = idx_features + std::to_string(idx.range) + " ";
+    }
+  }
+  while (idx_features.back() == ' ') {
+    idx_features.pop_back();
   }
   return idx_features + ref_features;
 }
@@ -112,8 +123,9 @@ void TilePlanGenerator::GeneratePlans(size_t k) {
       auto inner = new_block->SubBlock(0);
       inner->add_tags(FromProto(options_.inner_set()));
       // Encode features in the comments
-      std::string tile_features = Features(inner.get());
-      new_block->comments = target_features_ + "." + tile_features;
+      std::string outer_features = Features(new_block.get());
+      std::string inner_features = Features(inner.get());
+      new_block->comments = outer_features + "." + inner_features;
       // Add the tiled block into the program
       block_list_.push_back(new_block);
     }
